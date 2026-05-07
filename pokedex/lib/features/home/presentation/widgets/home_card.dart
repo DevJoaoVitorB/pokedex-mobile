@@ -14,73 +14,86 @@ class HomeCard extends StatelessWidget {
     final theme = Theme.of(context);
     final idText = '#${pokemon.id.toString().padLeft(3, '0')}';
 
-    return Container(
-      margin: const EdgeInsets.all(16),
-      width: 300,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Row(
-        children: <Widget>[
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  idText,
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: AppColors.numberColor,
-                    fontSize: 36,
-                    fontWeight: FontWeight.w900,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  _titleCase(pokemon.name),
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 6,
-                  children: pokemon.types.map((type) {
-                    return _TypeIcon(typeName: type.name, size: 32);
-                  }).toList(),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(
-            width: 150,
-            height: 150,
-            child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Image.network(
-                pokemon.spriteUrl ?? '',
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.image_not_supported_outlined);
-                },
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 260;
+        final idFont = compact ? 28.0 : 36.0;
+        final nameFont = compact ? 16.0 : 20.0;
+        final iconSize = compact ? 24.0 : 32.0;
+        final imageSize = compact ? 96.0 : 150.0;
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.border),
+            boxShadow: <BoxShadow>[
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      idText,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: AppColors.numberColor,
+                        fontSize: idFont,
+                        fontWeight: FontWeight.w900,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      _titleCase(pokemon.name),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontSize: nameFont,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: pokemon.types.map((type) {
+                        return _TypeIcon(typeName: type.name, size: iconSize);
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: imageSize,
+                height: imageSize,
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Image.network(
+                    pokemon.spriteUrl ?? '',
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(Icons.image_not_supported_outlined);
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

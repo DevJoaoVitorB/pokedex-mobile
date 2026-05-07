@@ -49,94 +49,155 @@ class _HomePageState extends State<HomePage> {
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, child) {
-            return CustomScrollView(
-              slivers: <Widget>[
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                    child: HomeHeader(),
-                  ),
-                ),
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24),
-                    child: HomeTitleSection(),
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 16,
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final maxWidth = constraints.maxWidth;
+                final isWide = maxWidth >= 1024;
+                final isMedium = maxWidth >= 720;
+                final horizontalPadding = isWide
+                    ? 64.0
+                    : isMedium
+                    ? 32.0
+                    : 24.0;
+                final crossAxisCount = isWide
+                    ? 3
+                    : isMedium
+                    ? 2
+                    : 1;
+
+                return CustomScrollView(
+                  slivers: <Widget>[
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: horizontalPadding,
+                          vertical: 16,
+                        ),
+                        child: const HomeHeader(),
+                      ),
                     ),
-                    child: HomeSearchBar(onChanged: _controller.updateQuery),
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: HomeFilters(
-                      selectedType: _controller.selectedType,
-                      selectedGeneration: _controller.selectedGeneration,
-                      selectedWeight: _controller.selectedWeight,
-                      selectedHeight: _controller.selectedHeight,
-                      typeOptions: _controller.typeOptions,
-                      generationOptions: _controller.generationOptions,
-                      weightOptions: _controller.weightOptions,
-                      heightOptions: _controller.heightOptions,
-                      onTypeSelected: _controller.updateTypeFilter,
-                      onGenerationSelected: _controller.updateGenerationFilter,
-                      onWeightSelected: _controller.updateWeightFilter,
-                      onHeightSelected: _controller.updateHeightFilter,
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: horizontalPadding,
+                        ),
+                        child: const HomeTitleSection(),
+                      ),
                     ),
-                  ),
-                ),
-                if (_controller.isLoading)
-                  const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 32),
-                      child: Center(child: CircularProgressIndicator()),
-                    ),
-                  )
-                else if (_controller.errorMessage != null)
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 32),
-                      child: Center(
-                        child: Text(
-                          _controller.errorMessage ?? 'Error',
-                          style: Theme.of(context).textTheme.bodyMedium,
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: horizontalPadding,
+                          vertical: 16,
+                        ),
+                        child: HomeSearchBar(
+                          onChanged: _controller.updateQuery,
                         ),
                       ),
                     ),
-                  )
-                else
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate((context, index) {
-                        final pokemon = _controller.visiblePokemon[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: HomeCard(pokemon: pokemon),
-                        );
-                      }, childCount: _controller.visiblePokemon.length),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: horizontalPadding,
+                        ),
+                        child: HomeFilters(
+                          selectedType: _controller.selectedType,
+                          selectedGeneration: _controller.selectedGeneration,
+                          selectedWeight: _controller.selectedWeight,
+                          selectedHeight: _controller.selectedHeight,
+                          typeOptions: _controller.typeOptions,
+                          generationOptions: _controller.generationOptions,
+                          weightOptions: _controller.weightOptions,
+                          heightOptions: _controller.heightOptions,
+                          onTypeSelected: _controller.updateTypeFilter,
+                          onGenerationSelected:
+                              _controller.updateGenerationFilter,
+                          onWeightSelected: _controller.updateWeightFilter,
+                          onHeightSelected: _controller.updateHeightFilter,
+                        ),
+                      ),
                     ),
-                  ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: HomePagination(
-                      currentPage: _controller.currentPage,
-                      totalPages: _controller.totalPages,
-                      onNext: _controller.nextPage,
-                      onPrevious: _controller.previousPage,
-                      onSelect: _controller.loadPage,
+                    if (_controller.isLoading)
+                      const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 32),
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                      )
+                    else if (_controller.errorMessage != null)
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 32),
+                          child: Center(
+                            child: Text(
+                              _controller.errorMessage ?? 'Error',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ),
+                        ),
+                      )
+                    else if (crossAxisCount == 1)
+                      SliverPadding(
+                        padding: EdgeInsets.fromLTRB(
+                          horizontalPadding,
+                          16,
+                          horizontalPadding,
+                          8,
+                        ),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate((
+                            context,
+                            index,
+                          ) {
+                            final pokemon = _controller.visiblePokemon[index];
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: HomeCard(pokemon: pokemon),
+                            );
+                          }, childCount: _controller.visiblePokemon.length),
+                        ),
+                      )
+                    else
+                      SliverPadding(
+                        padding: EdgeInsets.fromLTRB(
+                          horizontalPadding,
+                          16,
+                          horizontalPadding,
+                          8,
+                        ),
+                        sliver: SliverGrid(
+                          delegate: SliverChildBuilderDelegate((
+                            context,
+                            index,
+                          ) {
+                            final pokemon = _controller.visiblePokemon[index];
+                            return HomeCard(pokemon: pokemon);
+                          }, childCount: _controller.visiblePokemon.length),
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: crossAxisCount,
+                                mainAxisSpacing: 16,
+                                crossAxisSpacing: 16,
+                                childAspectRatio: isWide ? 1.8 : 1.6,
+                              ),
+                        ),
+                      ),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: HomePagination(
+                          currentPage: _controller.currentPage,
+                          totalPages: _controller.totalPages,
+                          onNext: _controller.nextPage,
+                          onPrevious: _controller.previousPage,
+                          onSelect: _controller.loadPage,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 8)),
-              ],
+                    const SliverToBoxAdapter(child: SizedBox(height: 8)),
+                  ],
+                );
+              },
             );
           },
         ),

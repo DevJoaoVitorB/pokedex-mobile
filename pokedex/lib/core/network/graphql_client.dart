@@ -6,6 +6,7 @@ class GraphqlClientProvider {
   static final GraphqlClientProvider instance = GraphqlClientProvider._();
 
   static const String endpoint = 'https://beta.pokeapi.co/graphql/v1beta';
+  static const String cacheBoxName = 'graphqlclientstore';
 
   late final GraphQLClient _client;
 
@@ -13,7 +14,7 @@ class GraphqlClientProvider {
 
   Future<void> initialize() async {
     await initHiveForFlutter();
-    final box = await HiveStore.openBox('graphql');
+    final box = await HiveStore.openBox(cacheBoxName);
     final store = HiveStore(box);
     final cache = GraphQLCache(store: store);
 
