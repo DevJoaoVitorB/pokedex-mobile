@@ -47,12 +47,14 @@ class PokemonGraphqlDatasource {
     final stats = _mapStats(pokemon);
     final typeEffects = _mapTypeEffects(pokemon);
     final summary = _mapSummary(pokemon);
+    final generation = _mapGeneration(pokemon);
 
     final dtoMap = <String, dynamic>{
       'id': pokemon['id'] as int? ?? 0,
       'name': pokemon['name'] as String? ?? 'unknown',
       'height': pokemon['height'] as int? ?? 0,
       'weight': pokemon['weight'] as int? ?? 0,
+      'generation': generation,
       'spriteUrl': spriteUrl,
       'types': types,
       'abilities': abilities,
@@ -147,6 +149,13 @@ class PokemonGraphqlDatasource {
     return raw?.replaceAll('\n', ' ').replaceAll('\f', ' ');
   }
 
+  String _mapGeneration(Map<String, dynamic> pokemon) {
+    final species = pokemon['pokemon_v2_pokemonspecy'] as Map<String, dynamic>?;
+    final generation =
+        species?['pokemon_v2_generation'] as Map<String, dynamic>?;
+    return generation?['name'] as String? ?? 'unknown';
+  }
+
   String? _extractSpriteUrl(dynamic spriteJson) {
     if (spriteJson == null) {
       return null;
@@ -200,6 +209,9 @@ query PokemonList($limit: Int!, $offset: Int!) {
       }
     }
     pokemon_v2_pokemonspecy {
+      pokemon_v2_generation {
+        name
+      }
       pokemon_v2_pokemonspeciesflavortexts(
         where: {language_id: {_eq: 9}},
         limit: 1,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pokedex/core/theme/app_colors.dart';
 import 'package:pokedex/features/home/domain/entities/pokemon.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class HomeCard extends StatelessWidget {
@@ -37,7 +38,7 @@ class HomeCard extends StatelessWidget {
               children: <Widget>[
                 Text(
                   idText,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  style: theme.textTheme.labelMedium?.copyWith(
                     color: AppColors.numberColor,
                     fontSize: 36,
                     fontWeight: FontWeight.w900,
@@ -57,19 +58,9 @@ class HomeCard extends StatelessWidget {
                 Wrap(
                   spacing: 8,
                   runSpacing: 6,
-                  children: pokemon.types
-                      .map(
-                        (type) => SvgPicture.asset(
-                          'assets/types/${type.name}.svg',
-                          width: 16,
-                          height: 16,
-                          colorFilter: ColorFilter.mode(
-                            Colors.white, // troque pela cor desejada
-                            BlendMode.srcIn,
-                          ),
-                        ),
-                      )
-                      .toList(),
+                  children: pokemon.types.map((type) {
+                    return _TypeIcon(typeName: type.name, size: 32);
+                  }).toList(),
                 ),
               ],
             ),
@@ -99,5 +90,78 @@ class HomeCard extends StatelessWidget {
     }
 
     return value[0].toUpperCase() + value.substring(1);
+  }
+}
+
+class _TypeIcon extends StatelessWidget {
+  const _TypeIcon({required this.typeName, required this.size});
+
+  final String typeName;
+  final double size;
+
+  static final Map<String, Future<String>> _svgCache =
+      <String, Future<String>>{};
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String>(
+      future: _loadSvg(typeName.toLowerCase()),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return SizedBox(width: size, height: size);
+        }
+
+        return SvgPicture.string(
+          snapshot.data!,
+          width: size,
+          height: size,
+          fit: BoxFit.contain,
+        );
+      },
+    );
+  }
+
+  Future<String> _loadSvg(String name) {
+    return _svgCache.putIfAbsent(name, () async {
+      final raw = await rootBundle.loadString('assets/types/$name.svg');
+      return _inlineStyleFills(raw);
+    });
+  }
+
+  String _inlineStyleFills(String raw) {
+    final styleRegex = RegExp(r'<style[^>]*>([\s\S]*?)</style>');
+    final styleMatch = styleRegex.firstMatch(raw);
+    if (styleMatch == null) {
+      return raw;
+    }
+
+    final styleContent = styleMatch.group(1) ?? '';
+    final classRegex = RegExp(
+      r'\.([\w-]+)\s*\{\s*fill:\s*(#[0-9a-fA-F]{3,6})\s*;?\s*\}',
+    );
+    final fills = <String, String>{};
+    for (final match in classRegex.allMatches(styleContent)) {
+      final className = match.group(1);
+      final fill = match.group(2);
+      if (className != null && fill != null) {
+        fills[className] = fill;
+      }
+    }
+
+    final withoutStyle = raw.replaceAll(styleRegex, '');
+    if (fills.isEmpty) {
+      return withoutStyle;
+    }
+
+    return withoutStyle.replaceAllMapped(RegExp(r'class="([^"]+)"'), (match) {
+      final classNames = match.group(1)?.split(' ') ?? <String>[];
+      for (final name in classNames) {
+        final fill = fills[name];
+        if (fill != null) {
+          return 'fill="$fill"';
+        }
+      }
+      return match.group(0) ?? '';
+    });
   }
 }

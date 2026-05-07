@@ -9,6 +9,7 @@ class PokemonDto {
     required this.name,
     required this.height,
     required this.weight,
+    required this.generation,
     required this.spriteUrl,
     required this.types,
     required this.abilities,
@@ -21,6 +22,7 @@ class PokemonDto {
   final String name;
   final int height;
   final int weight;
+  final String generation;
   final String? spriteUrl;
   final List<PokemonTypeDto> types;
   final List<PokemonAbilityDto> abilities;

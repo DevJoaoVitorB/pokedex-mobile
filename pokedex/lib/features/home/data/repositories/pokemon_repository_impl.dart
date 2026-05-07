@@ -62,6 +62,7 @@ class PokemonRepositoryImpl implements PokemonRepository {
       name: dto.name,
       height: dto.height,
       weight: dto.weight,
+      generation: dto.generation,
       spriteUrl: dto.spriteUrl,
       types: dto.types.map((type) => PokemonType(name: type.name)).toList(),
       abilities: dto.abilities

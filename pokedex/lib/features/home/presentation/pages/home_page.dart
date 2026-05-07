@@ -31,7 +31,7 @@ class _HomePageState extends State<HomePage> {
     final repository = PokemonRepositoryImpl(datasource);
     final usecase = GetPokemonList(repository);
     _controller = HomeController(usecase);
-    _controller.load(limit: 20, offset: 0);
+    _controller.loadAllPokemon();
   }
 
   @override
@@ -72,10 +72,23 @@ class _HomePageState extends State<HomePage> {
                     child: HomeSearchBar(onChanged: _controller.updateQuery),
                   ),
                 ),
-                const SliverToBoxAdapter(
+                SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24),
-                    child: HomeFilters(),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: HomeFilters(
+                      selectedType: _controller.selectedType,
+                      selectedGeneration: _controller.selectedGeneration,
+                      selectedWeight: _controller.selectedWeight,
+                      selectedHeight: _controller.selectedHeight,
+                      typeOptions: _controller.typeOptions,
+                      generationOptions: _controller.generationOptions,
+                      weightOptions: _controller.weightOptions,
+                      heightOptions: _controller.heightOptions,
+                      onTypeSelected: _controller.updateTypeFilter,
+                      onGenerationSelected: _controller.updateGenerationFilter,
+                      onWeightSelected: _controller.updateWeightFilter,
+                      onHeightSelected: _controller.updateHeightFilter,
+                    ),
                   ),
                 ),
                 if (_controller.isLoading)
@@ -110,10 +123,16 @@ class _HomePageState extends State<HomePage> {
                       }, childCount: _controller.visiblePokemon.length),
                     ),
                   ),
-                const SliverToBoxAdapter(
+                SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    child: HomePagination(),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: HomePagination(
+                      currentPage: _controller.currentPage,
+                      totalPages: _controller.totalPages,
+                      onNext: _controller.nextPage,
+                      onPrevious: _controller.previousPage,
+                      onSelect: _controller.loadPage,
+                    ),
                   ),
                 ),
                 const SliverToBoxAdapter(child: SizedBox(height: 8)),
